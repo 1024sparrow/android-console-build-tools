@@ -50,4 +50,4 @@ mv tools android-sdk-linux
 
 echo export MYANDROID="$(pwd)" >> ~/.bashrc
 cp $(dirname $0)/generate_android_build_script.sh ./
-echo export MYANDROID_GEN="$(pwd)/generates_desktop_home_files_for_desktop_indicator.sh" >> ~/.bashrc
+echo export MYANDROID_GEN="$(pwd)/generate_android_build_script.sh" >> ~/.bashrc
