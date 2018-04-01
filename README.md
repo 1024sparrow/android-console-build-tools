@@ -1,7 +1,8 @@
 # android-console-build-tools
-console build tools for building android applications
+console build tools for building android applications.
 
 Перед вами bash-скрипт, который закачивает, распаковывает, как надо расставляет Android-SDK, Android-NDK и всё то, что нужно для сборки.
+Практическая реализация рецептов, описанных в статье https://www.hanshq.net/command-line-android.html
 
 # Системные требования
 Для установки вам потребуется JDK. Архив весит 339 МБ.
