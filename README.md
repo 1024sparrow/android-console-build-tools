@@ -11,7 +11,7 @@ console build tools for building android applications.
 
 # Инструкция по установке
 1. Создайте диреторию myandroid, в которой будет располагаться JAVA-SDK и прочие бинарники.
-2. Положите туда файл jdk-9.0.1_linux-x64_bin.tar.gz. Его можно взять здесь: http://www.oracle.com/technetwork/java/javase/downloads/index.html
+2. Положите туда файл jdk-9.0.1_linux-x64_bin.tar.gz. Его можно взять здесь: http://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase9-3934878.html (только JDK)
 3. Зайдите в директорию myandroid и, находясь там, запустите скрипт install.sh из этой директории
 
 # После установки (использование)

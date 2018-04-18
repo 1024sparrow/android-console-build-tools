@@ -10,7 +10,9 @@ NC='\033[0m'
 if [ ! -e $JDK_FILE ]
 then
     echo Файл $JDK_FILE не найден. Положите его сюда и запустите скрипт ещё раз.
-    echo Его можно взять здесь: http://www.oracle.com/technetwork/java/javase/downloads/index.html
+    #echo Его можно взять здесь: http://www.oracle.com/technetwork/java/javase/downloads/index.html
+    echo Его можно взять здесь: http://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase9-3934878.html
+    echo (требуется старая версия JDK-9, чтобы охватить и старые версии Android)
     exit 1
 fi
 
