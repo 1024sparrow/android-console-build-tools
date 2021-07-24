@@ -24,10 +24,11 @@ console build tools for building android applications.
 	Так что, если у вас нет учётной записи, вам необходимо будет зарегистрироваться на сайте oracle.com .
 	Скачанный файл сохраните в директорию ~/opt/myandroid/jdk-9.0.1_linux-x64_bin.tar.gz
 	```
-3. Зайдите в директорию myandroid и, находясь там, запустите скрипт install.sh из этой директории
+3. Зайдите в директорию myandroid, скачайте данный репозиторий и, запустите скрипт install.sh, не переходя в директорию скачанного репозитория
 	```bash
 	$ cd ~/opt/myandroid
 	$ git clone https://gitflic.ru/project/1024sparrow/android-console-build-tools.git
+	$ android-console-build-tools/install.sh
 	```
 
 # После установки (использование)
