@@ -14,21 +14,21 @@ console build tools for building android applications.
 # Инструкция по установке
 > ВНИМАНИЕ! Перед тем как скачивать себе данный репозиторий, прочитайте инструкцию по установке.
 1. Создайте диреторию myandroid, в которой будет располагаться JAVA-SDK и прочие бинарники.
-```bash
-$ mkdir -p ~/opt/myandroid
-```
+	```bash
+	$ mkdir -p ~/opt/myandroid
+	```
 2. Положите туда файл jdk-9.0.1_linux-x64_bin.tar.gz. Его можно взять [здесь](http://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase9-3934878.html (только JDK))
-```
-Перейдите по ссылке и скачайте файл jdk-9.0.1_linux-x64_bin.tar.gz .
-Скачать могут только авторизованные пользователи.
-Так что, если у вас нет учётной записи, вам необходимо будет зарегистрироваться на сайте oracle.com .
-Скачанный файл сохраните в директорию ~/opt/myandroid/jdk-9.0.1_linux-x64_bin.tar.gz
-```
+	```
+	Перейдите по ссылке и скачайте файл jdk-9.0.1_linux-x64_bin.tar.gz .
+	Скачать могут только авторизованные пользователи.
+	Так что, если у вас нет учётной записи, вам необходимо будет зарегистрироваться на сайте oracle.com .
+	Скачанный файл сохраните в директорию ~/opt/myandroid/jdk-9.0.1_linux-x64_bin.tar.gz
+	```
 3. Зайдите в директорию myandroid и, находясь там, запустите скрипт install.sh из этой директории
-```bash
-$ cd ~/opt/myandroid
-$ git clone https://gitflic.ru/project/1024sparrow/android-console-build-tools.git
-```
+	```bash
+	$ cd ~/opt/myandroid
+	$ git clone https://gitflic.ru/project/1024sparrow/android-console-build-tools.git
+	```
 
 # После установки (использование)
 В директории с проектом (или пустой директории, если проект надо создать)
