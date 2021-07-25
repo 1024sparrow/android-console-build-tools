@@ -8,11 +8,11 @@ YEL='\033[1;33m'
 NC='\033[0m'
 
 #echo Его можно взять здесь: http://www.oracle.com/technetwork/java/javase/downloads/index.html
+#Его можно взять здесь: http://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase9-3934878.html
 if [ ! -e $JDK_FILE ]
 then
     echo "Файл $JDK_FILE не найден. Положите его сюда и запустите скрипт ещё раз.
-Его можно взять здесь: http://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase9-3934878.html
-(требуется старая версия JDK-9, чтобы охватить и старые версии Android)"
+Его можно взять здесь: https://www.oracle.com/java/technologies/javase-jdk16-downloads.html"
     exit 1
 fi
 
@@ -24,7 +24,7 @@ wget https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
 unzip sdk-tools-linux-3859397.zip
 
 echo -e "${YEL}Скачиваю и распаковываю build-tools${NC}"
-wget https://dl.google.com/android/repository/build-tools_r27.0.1-linux.zip
+wget https://dl.google.com/android/repository/build-tools_r27.0.1-linux.zip # api v.27 (Android 8.1)
 unzip build-tools_r27.0.1-linux.zip
 mkdir tools/build-tools
 mv android-8.1.0 tools/build-tools/27.0.1
