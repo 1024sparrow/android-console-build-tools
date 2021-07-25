@@ -54,6 +54,15 @@ $ cd ~helloAndroid
 $ $MYANDROID_GEN
 ```
 
+# Запуск приложения на подключенном устройстве
+
+Смотрите пример запуска из статью, в которой описывается сборка проекта Othello:
+```bash
+$·export·PATH="${PATH}:${SDK}/platform-tools"
+$·adb·install·-r·build/Othello.apk
+$·adb·shell·am·start·-n·net.hanshq.reversi/.OthelloActivity
+```
+
 ## Лицензия
 
 Copyright © 2018-2021 [Васильев Борис](https://github.com/1024sparrow)
