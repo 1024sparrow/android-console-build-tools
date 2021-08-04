@@ -116,13 +116,6 @@ then
     scriptname=build.sh
 fi
 
-echo -n "Название скрипта установки и запуска приложения на устройстве (deploy_and_run.sh по умолчанию; скрипт установки приложения на подключенное по USB устройство): "
-read scriptnameDeploy
-if [ -z $scriptnameDeploy ]
-then
-    scriptnameDeploy=deploy_and_run.sh
-fi
-
 if [ -e $scriptname ]
 then
     echo -n Файл $scriptname уже существует. Нажмите ENTER для замены. Для прерывания операции введите что-нибудь.
@@ -148,6 +141,7 @@ echo "#!/bin/bash
 
 appname=${appname}
 apppath=${apppath}
+apppathDotes=$(echo $apppath | sed 's/\//./g')
 mainActivityName=MainActivity
 
 source $MYANDROID/environments/1
@@ -193,6 +187,14 @@ fi
 
 echo -e \"\${YEL}Подписываем полученным ключом наш apk\${NC}\"
 \"\${BUILD_TOOLS}/apksigner\" sign --ks keystore.jks --ks-key-alias androidkey --ks-pass pass:android --key-pass pass:android --out build/\${appname}.apk build/\${appname}.aligned.apk || error_quite
+
+echo \"#!/bin/bash
+# установка приложения на устройство пользователя по USB
+
+adb install -r build/\$(basename ${apppath}).apk
+adb shell am start -n \${apppathDotes}/\${apppathDotes}.\${mainActivityName}
+\" > deploy_and_run.sh
+chmod +x deploy_and_run.sh
 " > $scriptname
 
 if ! which adb
@@ -200,12 +202,5 @@ then
     echo 'Не забудьте установить "adb"! В Ubuntu-20.04 это делается командой "sudo apt install adb"'
 fi
 
-echo "#!/bin/bash
-# установка приложения на устройство пользователя по USB
-
-adb install -r build/$(basename ${apppath}).apk
-adb shell am start -n ${apppathDotes}/${apppathDotes}.${mainActivityName}
-" > $scriptnameDeploy
 
 chmod +x $scriptname
-chmod +x $scriptnameDeploy
