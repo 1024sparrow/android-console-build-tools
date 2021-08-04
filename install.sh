@@ -1,6 +1,14 @@
 #!/bin/bash
 #http://www.hanshq.net/command-line-android.html
 
+VERSIONS=(
+    # откуда берём JDK (способ получения: user_provide|download_and_untar|download_and_unzip|apt_install)
+        # имя пакета JDK
+            # откуда берём sdk-tools (способ получения| user_provide|download_and_untar|download_and_unzip|apt_install)
+    user_provide
+        jdk-9.0.1_linux-x64_bin.tar.gz
+)
+
 JDK_FILE=jdk-9.0.1_linux-x64_bin.tar.gz
 
 RED='\033[0;31m'
