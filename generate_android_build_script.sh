@@ -178,8 +178,11 @@ echo \"У нас есть apk-файл, но прежде чем его уста
 echo -e \"\${YEL}Делаем так, чтобы после распаковки нашего apk файлы были выровнены по размеру блока 4 байта\${NC}\"
 \"\${BUILD_TOOLS}/zipalign\" -f -p 4 build/\${appname}.unsigned.apk build/\${appname}.aligned.apk || error_quite
 
-echo -e \"\${YEL}Генерируем ключ (будут запрашиваться данные у пользователя)\${NC}\"
-keytool -genkeypair -keystore keystore.jks -alias androidkey -validity 10000 -keyalg RSA -keysize 2048 -storepass android -keypass android || error_quite
+if [ ! -f keystore.jks ]
+then
+    echo -e \"\${YEL}Генерируем ключ (будут запрашиваться данные у пользователя)\${NC}\"
+    keytool -genkeypair -keystore keystore.jks -alias androidkey -validity 10000 -keyalg RSA -keysize 2048 -storepass android -keypass android || error_quite
+fi
 
 echo -e \"\${YEL}Подписываем полученным ключом наш apk\${NC}\"
 \"\${BUILD_TOOLS}/apksigner\" sign --ks keystore.jks --ks-key-alias androidkey --ks-pass pass:android --key-pass pass:android --out build/\${appname}.apk build/\${appname}.aligned.apk || error_quite
