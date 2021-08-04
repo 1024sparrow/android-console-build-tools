@@ -2,30 +2,39 @@
 #http://www.hanshq.net/command-line-android.html
 
 VERSIONS=(
-    # откуда берём JDK (способ получения: user_provide|download_and_untar|download_and_unzip|apt_install)
-        # имя пакета JDK
-            # откуда берём sdk-tools (способ получения| user_provide|download_and_untar|download_and_unzip|apt_install)
-    user_provide
-        jdk-9.0.1_linux-x64_bin.tar.gz
+    # comment
+        # откуда берём JDK (способ получения: user_provide|download_and_untar|download_and_unzip|apt_install)
+            # имя пакета JDK
+                # откуда берём sdk-tools (способ получения| user_provide|download_and_untar|download_and_unzip|apt_install)
+    "Android 5.1.1 (API level 22); "
+        user_provide
+            jdk-9.0.1_linux-x64_bin.tar.gz
+    "Android 7.0 (API level 24a; )"
+        user_provide
+            
 )
 
-JDK_FILE=jdk-9.0.1_linux-x64_bin.tar.gz
+#JDK_FILE=jdk-9.0.1_linux-x64_bin.tar.gz
 
 RED='\033[0;31m'
 YEL='\033[1;33m'
 NC='\033[0m'
 
-#echo Его можно взять здесь: http://www.oracle.com/technetwork/java/javase/downloads/index.html
-#Его можно взять здесь: http://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase9-3934878.html
-if [ ! -e $JDK_FILE ]
-then
-    echo "Файл $JDK_FILE не найден. Положите его сюда и запустите скрипт ещё раз.
-Его можно взять здесь: https://www.oracle.com/java/technologies/javase-jdk16-downloads.html"
-    exit 1
-fi
+mkdir environments
+echo 'JAVA_HOME=${MYANDROID}/java-se-9-ri/jdk-9
+PATH=${JAVA_HOME}/bin:$PATH
+SDK="${MYANDROID}"/android-sdk-linux
+BUILD_TOOLS="${SDK}"/build-tools/27.0.1
+PLATFORM="${SDK}"/platforms/android-22
+PATH="$SDK"/platform-tools:"$SDK"/build-tools/27.0.1:"$SDK":"$PATH"
+BUILD_TARGET_DESCRIPTION="Android 5.1.1 (API level 22)"
+' > environments/1
 
-echo -e "${YEL}Распаковываю jdk${NC}"
-tar -xf $JDK_FILE
+echo -e "${YEL}Скачиваю и распаковываю JDK-9${NC}"
+wget https://download.java.net/openjdk/jdk9/ri/openjdk-9+181_linux-x64_ri.zip &&
+    unzip openjdk-9+181_linux-x64_ri.zip &&
+    rm openjdk-9+181_linux-x64_ri.zip || (echo "can not download and prepare jdk9";exit 1)
+
 
 echo -e "${YEL}Скачиваю и распаковываю sdk-tools${NC}"
 wget https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip

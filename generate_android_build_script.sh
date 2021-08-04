@@ -150,12 +150,7 @@ appname=${appname}
 apppath=${apppath}
 mainActivityName=MainActivity
 
-export JAVA_HOME=\${MYANDROID}/jdk-9.0.1
-export PATH=\${JAVA_HOME}/bin:\$PATH
-export SDK=\"\${MYANDROID}/android-sdk-linux\"
-export BUILD_TOOLS=\"\${SDK}/build-tools/27.0.1\"
-export PLATFORM=\"\${SDK}/platforms/android-22\"
-export PATH=\"\$SDK/platform-tools\":\"\$SDK/build-tools/27.0.1\":\"\$SDK\":\"\$PATH\"
+source $MYANDROID/environments/1
 
 RED='\033[0;31m'
 YEL='\033[1;33m'
