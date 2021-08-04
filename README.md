@@ -81,18 +81,7 @@ $ $MYANDROID_GEN
 sudo apt install adb
 ```
 
-После того, как ваше приложение собрано, запускаем его скриптом ```run.sh```.
-
-
-
-
-
-Смотрите пример запуска из статью, в которой описывается сборка проекта Othello:
-```bash
-$·export·PATH="${PATH}:${SDK}/platform-tools"
-$·adb·install·-r·build/Othello.apk
-$·adb·shell·am·start·-n·net.hanshq.reversi/.OthelloActivity
-```
+После того, как ваше приложение собрано, подключаем устройство к компьютеру и запускаем скрипт **deploy_and_run.sh** - он установит приложение на устройство и запустит его.
 
 ## Лицензия
 
