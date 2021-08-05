@@ -26,14 +26,15 @@ then
 fi
 echo 'JAVA_HOME=${MYANDROID}/java-se-9-ri/jdk-9
 PATH=${JAVA_HOME}/bin:$PATH
-SDK="${MYANDROID}"/android-sdk-linux
+#SDK="${MYANDROID}"/android-sdk-linux
+SDK="${MYANDROID}"/tools
 BUILD_TOOLS="${SDK}"/build-tools/27.0.1
 PLATFORM="${SDK}"/platforms/android-22
 PATH="$SDK"/platform-tools:"$SDK"/build-tools/27.0.1:"$SDK":"$PATH"
 BUILD_TARGET_DESCRIPTION="Android 5.1.1 (API level 22)"
 ' > environments/1
 
-if [ ! -f openjdk-9+181_linux-x64_ri.zip ]
+if [ ! -d java-se-9-ri ]
 then
     echo -e "${YEL}Скачиваю и распаковываю JDK-9${NC}"
     wget https://download.java.net/openjdk/jdk9/ri/openjdk-9+181_linux-x64_ri.zip &&

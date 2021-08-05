@@ -200,7 +200,7 @@ chmod +x deploy_and_run.sh
 if ! which adb
 then
     echo 'Не забудьте установить "adb"! В Ubuntu-20.04 это делается командой "sudo apt install adb"'
-fi
+fi > /dev/null
 
 
 chmod +x $scriptname
