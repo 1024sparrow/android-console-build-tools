@@ -68,5 +68,4 @@ unzip platform-tools_r26.0.2-linux.zip -d tools/
 mv tools android-sdk-linux
 
 echo export MYANDROID="$(pwd)" >> ~/.bashrc
-cp $(dirname $0)/generate_android_build_script.sh ./
 echo export MYANDROID_GEN="$(pwd)/generate_android_build_script.sh" >> ~/.bashrc
