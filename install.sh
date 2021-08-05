@@ -26,13 +26,21 @@ then
 fi
 echo 'JAVA_HOME=${MYANDROID}/java-se-9-ri/jdk-9
 PATH=${JAVA_HOME}/bin:$PATH
-#SDK="${MYANDROID}"/android-sdk-linux
-SDK="${MYANDROID}"/tools
+SDK="${MYANDROID}"/android-sdk-linux
 BUILD_TOOLS="${SDK}"/build-tools/27.0.1
 PLATFORM="${SDK}"/platforms/android-22
 PATH="$SDK"/platform-tools:"$SDK"/build-tools/27.0.1:"$SDK":"$PATH"
 BUILD_TARGET_DESCRIPTION="Android 5.1.1 (API level 22)"
 ' > environments/1
+
+echo 'JAVA_HOME=${MYANDROID}/java-se-9-ri/jdk-9
+PATH=${JAVA_HOME}/bin:$PATH
+SDK="${MYANDROID}"/tools
+BUILD_TOOLS="${SDK}"/build-tools/27.0.1
+PLATFORM="${SDK}"/platforms/android-27
+PATH="$SDK"/platform-tools:"$SDK"/build-tools/27.0.1:"$SDK":"$PATH"
+BUILD_TARGET_DESCRIPTION="Android 8.1 (API level 27)"
+' > environments/2
 
 if [ ! -d java-se-9-ri ]
 then
@@ -43,6 +51,8 @@ then
 fi
 
 
+# https://dl.google.com/android/repository/platform-tools-latest-linux.zip
+# https://dl.google.com/android/repository/platform-tools_r31.0.3-linux.zip
 if [ ! -f sdk-tools-linux-3859397.zip ]
 then
     echo -e "${YEL}Скачиваю и распаковываю sdk-tools${NC}"
@@ -80,13 +90,31 @@ then
     mv android-5.1.1 tools/platforms/android-22
 fi
 
+#if [ ! -f platform-24_r02.zip ]
+#then
+#    echo -e "${YEL}Скачиваю и распаковываю платформу android-24${NC}"
+#    wget https://dl.google.com/android/repository/platform-24_r02.zip
+#    unzip platform-24_r02.zip
+#    mkdir tools/platforms
+#    mv android-7.0 tools/platforms/android-24
+#fi
+
+if [ ! -f platform-27_r03.zip ]
+then
+    echo -e "${YEL}Скачиваю и распаковываю платформу android-27${NC}"
+    wget https://dl.google.com/android/repository/platform-27_r03.zip
+    unzip platform-27_r03.zip
+    mkdir tools/platforms
+    mv android-8.1.0 tools/platforms/android-27
+fi
+
 if [ ! platform-tools_r26.0.2-linux.zip ]
 then
     echo -e "${YEL}Скачиваю и распаковываю инструменты для платформы r26.0.2${NC}"
     wget https://dl.google.com/android/repository/platform-tools_r26.0.2-linux.zip
     unzip platform-tools_r26.0.2-linux.zip -d tools/
-    mv tools android-sdk-linux
 fi
+mv tools android-sdk-linux
 
 
 if [ -z $MYANDROID ]

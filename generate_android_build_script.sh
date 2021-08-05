@@ -144,7 +144,7 @@ apppath=${apppath}
 apppathDotes=$(echo $apppath | sed 's/\//./g')
 mainActivityName=MainActivity
 
-source $MYANDROID/environments/1
+source $MYANDROID/environments/2
 
 RED='\033[0;31m'
 YEL='\033[1;33m'
