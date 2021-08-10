@@ -1,0 +1,436 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <title>Building an Android App from the Command Line</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" type="text/css" href="code-style.css">
+        <link rel="alternate" type="application/rss+xml" href="feed.rss">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div id="main">
+        <a href="https://www.hanshq.net"><img src="gfx/header_dscf2150.jpg" id="header" alt="hanshq.net" style="max-width: 900px; max-height: 400px"></a>
+        <div id="container">
+                <div id="center">
+                        <h1>Building an Android App <br>from the Command Line<br><span class="date">(4&nbsp;January&nbsp;2017)</span></h1>
+                        <div id="left">
+<p>I have been learning a bit of Android programming recently (late to the party, I know). One thing that frustrated me was figuring out how to actually build an Android program.</p>
+
+<p>Things are simple enough with C. As explained in the first section of <a href="https://en.wikipedia.org/wiki/The_C_Programming_Language">K&amp;R</a>, one might write this as a first program:</p>
+
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()
+{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Hello, world!</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;
+}</span>
+</pre></div>
+
+
+<p>and turn it into an executable by simply invoking the system compiler as below.</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> cc hello.c
+<span class="gp">$</span> ./a.out
+<span class="go">Hello, world!</span>
+</pre></div>
+
+
+<p>This diagram illustrates the full process:</p>
+
+<div style="text-align: center">
+<div class="latex"><p style="margin-left: 2em"><img src="gfx/tex_736b0c69.svg" alt="LaTeX"></p></div>
+</div>
+
+<p>For Android, however, the <a href="https://developer.android.com/training/basics/firstapp/creating-project.html">official way</a> to write Hello World is to fire up <a href="https://developer.android.com/studio/intro/index.html">Android Studio</a>, use its wizard to create a new project, and the application will then be generated and built automagically in a few minutes.</p>
+
+<p>This is of course intended as a convenience for the developer, but for someone who wants to know what's going on, it makes things difficult instead. What actually happened? Which of all these files are really necessary for Hello World?</p>
+
+<p>Others have expressed similar concerns:</p>
+
+<div style="text-align: center">
+<p><a href="https://twitter.com/ID_AA_Carmack/status/771749108780523520"><img src="gfx/carmack_tweet.png" alt="John Carmack: Create and run an empty activity in Android Studio and I get a 38 MB folder with 1,175 files. We've just given up on elegance."></a></p>
+</div>
+
+<p>(For me, it generated a 50 MB directory containing <a href="files/android_files.txt">1,348</a> files spread across 630 subdirectories.)</p>
+
+<p>Perhaps it is the control freak in me speaking (a good trait for programmers about their programs), but I simply don't feel comfortable not understanding how to build my own program.</p>
+
+<p>Below are my notes on how to build an Android application by hand from the command line. The instructions are for Linux, but they should be easy to adapt to Mac or Windows. The full source code and a build script is available in <a href="files/command_line_android.tar.gz"><span class="code">command_line_android.tar.gz</span></a>.</p>
+
+<a name="toc"></a>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#sdk">Installing the Development Tools</a></li>
+<li><a href="#source">The Hello World Program</a></li>
+<li><a href="#building">Building</a></li>
+<li><a href="#running">Running</a></li>
+<li><a href="#native">Using Native Code</a></li>
+</ul>
+
+<a name="sdk"></a>
+<h2>Installing the Development Tools</h2>
+
+<p>Android applications are usually written in Java, so building them requires having a Java Development Kit (JDK) installed. The current version of the Android tools require Java 8, which I downloaded from <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">here</a>, extracted and put on my <span class="code">PATH</span> like so:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> tar zxf jdk-8u112-linux-x64.tar.gz
+<span class="gp">$</span> <span class="nb">export</span> <span class="nv">JAVA_HOME</span><span class="o">=</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/jdk1.8.0_112
+<span class="gp">$</span> <span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="si">${</span><span class="nv">JAVA_HOME</span><span class="si">}</span>/bin:<span class="nv">$PATH</span>
+</pre></div>
+
+
+<p>Android specific tools are provided in the Android Software Development Kit (SDK). Normally, this is installed when installing Android Studio, but we can also do it ourselves (see the "Get just the command line tools" section on <a href="https://developer.android.com/studio/index.html#downloads">the Android Studio download page</a>):</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> curl -O https://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
+<span class="gp">$</span> tar zxf android-sdk_r24.4.1-linux.tgz
+</pre></div>
+
+
+<p>Unfortunately, that file doesn't contain everything we need, as explained in <span class="code">SDK Readme.txt</span>:</p>
+
+<div class="highlight"><pre><span></span>The Android SDK archive initially contains only the basic SDK tools. It does
+not contain an Android platform or any third-party libraries. In fact, it
+doesn&#39;t even have all the tools you need to develop an application.
+
+In order to start developing applications, you must install the Platform-tools
+and at least one version of the Android platform, using the SDK Manager.
+</pre></div>
+
+
+<p>What we need is <span class="code">build-tools</span> (for <span class="code">aapt</span>, <span class="code">dx</span> and <span class="code">apksigner</span>), an Android Platform to target (I will use version 16) and <span class="code">platform-tools</span> (for <span class="code">adb</span>).</p>
+
+<p>Instead of using the SDK Manager as suggested above, we can install those directly ourselves (the filenames were found in <a href="https://dl.google.com/android/repository/repository-11.xml">repository-11.xml</a>):</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> curl -O https://dl.google.com/android/repository/build-tools_r25-linux.zip
+<span class="gp">$</span> unzip build-tools_r25-linux.zip
+<span class="gp">$</span> mkdir android-sdk-linux/build-tools
+<span class="gp">$</span> mv android-7.1.1 android-sdk-linux/build-tools/25.0.0
+
+<span class="gp">$</span> curl -O https://dl.google.com/android/repository/android-16_r05.zip
+<span class="gp">$</span> unzip android-16_r05.zip
+<span class="gp">$</span> mv android-4.1.2 android-sdk-linux/platforms/android-16
+
+<span class="gp">$</span> curl -O https://dl.google.com/android/repository/platform-tools_r25-linux.zip
+<span class="gp">$</span> unzip platform-tools_r25-linux.zip -d android-sdk-linux/
+</pre></div>
+
+
+<a name="source"></a>
+<h2>The Hello World Program</h2>
+
+<p>Our Hello World program consists of three files: an application manifest, a layout and an Activity.</p>
+
+<p>The <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">app manifest</a> is shown below (<span class="code">AndroidManifest.xml</span>). It specifies the name of the app, which Android API it targets, etc. The <span class="code">intent-filter</span> element sets up <span class="code">MainActivity</span> as the main entry point of the program.</p>
+
+<div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="nt">&lt;manifest</span> <span class="na">xmlns:android=</span><span class="s">&quot;http://schemas.android.com/apk/res/android&quot;</span>
+          <span class="na">package=</span><span class="s">&quot;net.hanshq.hello&quot;</span>
+          <span class="na">versionCode=</span><span class="s">&quot;1&quot;</span>
+          <span class="na">versionName=</span><span class="s">&quot;0.1&quot;</span><span class="nt">&gt;
+    &lt;uses-sdk</span> <span class="na">android:minSdkVersion=</span><span class="s">&quot;16&quot;</span><span class="nt">/&gt;
+    &lt;application</span> <span class="na">android:label=</span><span class="s">&quot;Hello&quot;</span><span class="nt">&gt;
+        &lt;activity</span> <span class="na">android:name=</span><span class="s">&quot;.MainActivity&quot;</span><span class="nt">&gt;
+            &lt;intent-filter&gt;
+                &lt;action</span> <span class="na">android:name=</span><span class="s">&quot;android.intent.action.MAIN&quot;</span><span class="nt">/&gt;
+                &lt;category</span> <span class="na">android:name=</span><span class="s">&quot;android.intent.category.LAUNCHER&quot;</span><span class="nt">/&gt;
+            &lt;/intent-filter&gt;
+        &lt;/activity&gt;
+    &lt;/application&gt;
+&lt;/manifest&gt;</span>
+</pre></div>
+
+
+<p>Below is the <a href="https://developer.android.com/guide/topics/ui/declaring-layout.html">layout</a> file (<span class="code">res/layout/activity_main.xml</span>). It defines UI elements to be used in our program.</p>
+
+<div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="nt">&lt;LinearLayout</span>
+    <span class="na">xmlns:android=</span><span class="s">&quot;http://schemas.android.com/apk/res/android&quot;</span>
+    <span class="na">android:layout_width=</span><span class="s">&quot;match_parent&quot;</span>
+    <span class="na">android:layout_height=</span><span class="s">&quot;match_parent&quot;</span>
+    <span class="na">android:gravity=</span><span class="s">&quot;center&quot;</span>
+    <span class="na">android:orientation=</span><span class="s">&quot;vertical&quot;</span><span class="nt">&gt;
+
+    &lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">&quot;wrap_content&quot;</span>
+        <span class="na">android:layout_height=</span><span class="s">&quot;wrap_content&quot;</span>
+        <span class="na">android:id=</span><span class="s">&quot;@+id/my_text&quot;</span><span class="nt">/&gt;
+&lt;/LinearLayout&gt;</span>
+</pre></div>
+
+
+<p>Finally, the <a href="https://developer.android.com/reference/android/app/Activity.html">Activity</a> is implemented like this: (<span class="code">java/net/hanshq/hello/MainActivity.java</span>)</p>
+
+<div class="highlight"><pre><span></span><span class="kn">package</span> <span class="nn">net.hanshq.hello</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">android.app.Activity</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.os.Bundle</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.widget.TextView</span><span class="o">;</span>
+
+<span class="kd">public class</span> <span class="nc">MainActivity</span> <span class="kd">extends</span> <span class="n">Activity</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle savedInstanceState</span><span class="o">) {</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">setContentView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">activity_main</span><span class="o">);</span>
+
+        <span class="n">TextView text</span> <span class="o">= (</span><span class="n">TextView</span><span class="o">)</span><span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">my_text</span><span class="o">);</span>
+        <span class="n">text</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;Hello, world!&quot;</span><span class="o">);
+    }
+}</span>
+</pre></div>
+
+
+<a name="building"></a>
+<h2>Building</h2>
+
+<p>We will use shell variables to more conveniently refer to the SDK we installed before. All build artifacts will be put in subdirectories of the <span class="code">build</span> directory which we create here.</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="nv">SDK</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span><span class="s2">/android-sdk-linux&quot;</span>
+<span class="gp">$</span> <span class="nv">BUILD_TOOLS</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">SDK</span><span class="si">}</span><span class="s2">/build-tools/25.0.0&quot;</span>
+<span class="gp">$</span> <span class="nv">PLATFORM</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">SDK</span><span class="si">}</span><span class="s2">/platforms/android-16&quot;</span>
+<span class="gp">$</span> mkdir -p build/gen build/obj build/apk
+</pre></div>
+
+
+<p>The first build step is to generate the <span class="code">R.java</span> file, which is used for referring to resources (such as <span class="code">R.id.my_text</span> above). This is done using the Android Asset Packaging Tool, <span class="code">aapt</span>:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">BUILD_TOOLS</span><span class="si">}</span><span class="s2">/aapt&quot;</span> package -f -m -J build/gen/ -S res <span class="se">\</span>
+      -M AndroidManifest.xml -I <span class="s2">&quot;</span><span class="si">${</span><span class="nv">PLATFORM</span><span class="si">}</span><span class="s2">/android.jar&quot;</span>
+</pre></div>
+
+
+<p>which creates <span class="code">build/gen/net/hanshq/hello/R.java</span>.</p>
+
+<p>The <span class="code">-f</span> flag causes <span class="code">aapt</span> to overwrite any existing output file, <span class="code">-m</span> causes it to create package directories under the output directory, and <span class="code">-J</span> makes it generate the <span class="code">R.java</span> file and sets the output directory. <span class="code">-S</span> points out the resource directory, <span class="code">-M</span> specifies the manifest, and <span class="code">-I</span> adds the platform <span class="code">.jar</span> as an "include file".</p>
+
+<p>Now that all the Java code is ready, we can compile it using <span class="code">javac</span>:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> javac -source <span class="m">1</span>.7 -target <span class="m">1</span>.7 -bootclasspath <span class="s2">&quot;</span><span class="si">${</span><span class="nv">JAVA_HOME</span><span class="si">}</span><span class="s2">/jre/lib/rt.jar&quot;</span> <span class="se">\</span>
+      -classpath <span class="s2">&quot;</span><span class="si">${</span><span class="nv">PLATFORM</span><span class="si">}</span><span class="s2">/android.jar&quot;</span> -d build/obj <span class="se">\</span>
+      build/gen/net/hanshq/hello/R.java java/net/hanshq/hello/MainActivity.java
+</pre></div>
+
+
+<p>(The <span class="code">1.7</span> and <span class="code">-bootclasspath</span> ure used to emit Java 7 byte code, which the Android tools expect, despite using JDK version 8.)</p>
+
+<p>The Java compiler created <span class="code">.class</span> files containing byte code for the Java Virtual Machine. That then has to be translated to <a href="https://en.wikipedia.org/wiki/Dalvik_%28software%29">Dalvik</a> byte code using the <span class="code">dx</span> tool:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">BUILD_TOOLS</span><span class="si">}</span><span class="s2">/dx&quot;</span> --dex --output<span class="o">=</span>build/apk/classes.dex build/obj/
+</pre></div>
+
+
+<p>(There is a new set of Android tools, <a href="https://source.android.com/source/jack.html">Jack and Jill</a>, that compile Java code directly into Dalvik bytecode. Maybe that will become the way to do things in the future.)</p>
+
+<p>We then package the contents of the <span class="code">build/apk/</span> directory together with the manifest and resources into an Android Application Package (APK) file, again using the <span class="code">aapt</span> tool:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">BUILD_TOOLS</span><span class="si">}</span><span class="s2">/aapt&quot;</span> package -f -M AndroidManifest.xml -S res/ <span class="se">\</span>
+      -I <span class="s2">&quot;</span><span class="si">${</span><span class="nv">PLATFORM</span><span class="si">}</span><span class="s2">/android.jar&quot;</span> <span class="se">\</span>
+      -F build/Hello.unsigned.apk build/apk/
+</pre></div>
+
+
+<p>The application has now been built, but the APK file needs to be <a href="https://developer.android.com/studio/publish/app-signing.html#signing-manually">signed</a> before any device will allow running it, even in debug mode, and zipaligned if we ever want to publish it in the Play Store.</p>
+
+<p>First, we run the <span class="code">zipalign</span> tool, which aligns uncompressed files in the APK on 4-byte boundaries for easier memory mapping:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">BUILD_TOOLS</span><span class="si">}</span><span class="s2">/zipalign&quot;</span> -f -p <span class="m">4</span> <span class="se">\</span>
+      build/Hello.unsigned.apk build/Hello.aligned.apk
+</pre></div>
+
+
+<p>Then we use the Java <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/keytool.html"><span class="code">keytool</span></a> to create a key store and key for signing:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> keytool -genkeypair -keystore keystore.jks -alias androidkey <span class="se">\</span>
+      -validity <span class="m">10000</span> -keyalg RSA -keysize <span class="m">2048</span> <span class="se">\</span>
+      -storepass android -keypass android
+<span class="go">What is your first and last name?
+  [Unknown]:
+What is the name of your organizational unit?
+  [Unknown]:
+What is the name of your organization?
+  [Unknown]:
+What is the name of your City or Locality?
+  [Unknown]:
+What is the name of your State or Province?
+  [Unknown]:
+What is the two-letter country code for this unit?
+  [Unknown]:
+Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
+  [no]:  yes</span>
+</pre></div>
+
+
+<p>(you may want to put in more proper values of course.)</p>
+
+<p>and use that key to sign our application with <span class="code">apksigner</span>:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">BUILD_TOOLS</span><span class="si">}</span><span class="s2">/apksigner&quot;</span> sign --ks keystore.jks <span class="se">\</span>
+      --ks-key-alias androidkey --ks-pass pass:android <span class="se">\</span>
+      --key-pass pass:android --out build/Hello.apk <span class="se">\</span>
+      build/Hello.aligned.apk
+</pre></div>
+
+
+<p>Et voilà, we have successfully built an Android application by hand from the command line! The diagram below illustrates the whole process.</p>
+
+<div style="text-align: center">
+<div class="latex"><p style="margin-left: 2em"><img src="gfx/tex_3aa48a9c.svg" alt="LaTeX"></p></div>
+</div>
+
+<p>(We skipped some common steps that aren't strictly necessary: <a href="https://developer.android.com/studio/write/lint.html">linting</a> and <a href="https://developer.android.com/studio/build/shrink-code.html">ProGuard</a>.)</p>
+
+<a name="running"></a>
+<h2>Running</h2>
+
+<p>We can install our freshly built APK on a device (which must have <a href="https://developer.android.com/studio/command-line/adb.html#Enabling">USB debugging</a> enabled) using the Android Debug Bridge:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">SDK</span><span class="si">}</span><span class="s2">/platform-tools/adb&quot;</span> install -r build/Hello.apk
+</pre></div>
+
+
+<p>and run it, either by starting it manually from the Launcher, or with <span class="code">adb</span>:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">SDK</span><span class="si">}</span><span class="s2">/platform-tools/adb&quot;</span> shell am start -n net.hanshq.hello/.MainActivity
+</pre></div>
+
+
+
+<a name="native"></a>
+<h2>Using Native Code</h2>
+
+<p>While Android applications are usually written in Java, they can also contain native code, that is, machine code to be run directly by the device's processor. This is useful for performance, as it removes the overhead from running Java code, and for portability, as it opens the platform to code written in other languages.</p>
+
+<p>Adding native code to our program makes it a little harder to build, but it turns out not to be too bad.</p>
+
+<p>The <a href="https://developer.android.com/ndk/index.html">Android Native Development Kit</a> (NDK) provides compilers and libraries for building C and C++ code for Android. It can be installed like this:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> curl -O https://dl.google.com/android/repository/android-ndk-r13b-linux-x86_64.zip
+<span class="gp">$</span> unzip android-ndk-r13b-linux-x86_64.zip
+<span class="gp">$</span> <span class="nv">NDK</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span><span class="s2">/android-ndk-r13b&quot;</span>
+</pre></div>
+
+
+<p>We set more shell variables to point at the specific toolchains we'll use: (if you're not using Linux, you'll want one of the other <span class="code">prebuilt</span> directories)</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="nv">ARM_TOOLCHAIN</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">NDK</span><span class="si">}</span><span class="s2">/toolchains/arm-linux-androideabi-4.9/prebuilt/&quot;</span>
+<span class="gp">$</span> <span class="nv">ARM_TOOLCHAIN</span><span class="o">+=</span><span class="s2">&quot;linux-x86_64/bin/arm-linux-androideabi-gcc&quot;</span>
+
+<span class="gp">$</span> <span class="nv">X86_TOOLCHAIN</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">NDK</span><span class="si">}</span><span class="s2">/toolchains/x86-4.9/prebuilt/&quot;</span>
+<span class="gp">$</span> <span class="nv">X86_TOOLCHAIN</span><span class="o">+=</span><span class="s2">&quot;linux-x86_64/bin/i686-linux-android-gcc&quot;</span>
+</pre></div>
+
+
+<p>We will update our Activity to use the <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/jni/">Java Native Interface</a> (see also <a href="https://developer.android.com/training/articles/perf-jni.html">Android JNI Tips</a>) for a new method, <span class="code">getMessage()</span>, and use that method to set the text of the <span class="code">TextView</span>. The native method will be implemented by a library called <span class="code">hello</span>, which we load with <span class="code">System.loadLibrary</span> in a static initializer block:</p>
+
+<div class="highlight"><pre><span></span><span class="kn">package</span> <span class="nn">net.hanshq.hello</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">android.app.Activity</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.os.Bundle</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.widget.TextView</span><span class="o">;</span>
+
+<span class="kd">public class</span> <span class="nc">MainActivity</span> <span class="kd">extends</span> <span class="n">Activity</span> <span class="o">{</span>
+    <span class="kd">static</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">loadLibrary</span><span class="o">(</span><span class="s">&quot;hello&quot;</span><span class="o">);
+    }</span>
+
+    <span class="kd">public native</span> <span class="n">String</span> <span class="nf">getMessage</span><span class="o">();</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle savedInstanceState</span><span class="o">) {</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">setContentView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">activity_main</span><span class="o">);</span>
+
+        <span class="n">TextView text</span> <span class="o">= (</span><span class="n">TextView</span><span class="o">)</span><span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">my_text</span><span class="o">);</span>
+        <span class="n">text</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">getMessage</span><span class="o">());
+    }
+}</span>
+</pre></div>
+
+
+<p>The <span class="code">hello</span> library must provide a native implementation of the <span class="code">getMessage</span> method. To figure out what C function signature corresponds to the Java method, we use the <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/javah.html"><span class="code">javah</span></a> tool:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> javah -classpath <span class="s2">&quot;</span><span class="si">${</span><span class="nv">PLATFORM</span><span class="si">}</span><span class="s2">/android.jar:build/obj&quot;</span> <span class="se">\</span>
+      -o /tmp/jni.h net.hanshq.hello.MainActivity
+<span class="gp">$</span> grep -A1 _getMessage /tmp/jni.h
+<span class="go">JNIEXPORT jstring JNICALL Java_net_hanshq_hello_MainActivity_getMessage
+  (JNIEnv *, jobject);</span>
+</pre></div>
+
+
+<p>We implement it like this, in <span class="code">hello.c</span>:</p>
+
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;jni.h&gt;</span><span class="cp"></span>
+
+<span class="k">static const</span> <span class="kt">char</span> <span class="o">*</span><span class="k">const</span> <span class="n">messages</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&quot;Hello, world!&quot;</span><span class="p">,</span>
+        <span class="s">&quot;Hej världen!&quot;</span><span class="p">,</span>
+        <span class="s">&quot;Bonjour, monde!&quot;</span><span class="p">,</span>
+        <span class="s">&quot;Hallo Welt!&quot;</span>
+<span class="p">};</span>
+
+<span class="n">JNIEXPORT jstring JNICALL</span>
+<span class="nf">Java_net_hanshq_hello_MainActivity_getMessage</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span><span class="n">env</span><span class="p">,</span> <span class="n">jobject obj</span><span class="p">)
+{</span>
+        <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="n">rand</span><span class="p">()</span> <span class="o">%</span> <span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="o">/</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">messages</span><span class="p">[</span><span class="mi">0</span><span class="p">]));</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">env</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">NewStringUTF</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">messages</span><span class="p">[</span><span class="n">i</span><span class="p">]);
+}</span>
+</pre></div>
+
+
+<p>The C file is compiled into the shared library <span class="code">libhello.so</span> (note the extra <span class="code">lib</span> prefix). We build one for ARMv7 and one for X86, to support most devices and emulators, and put them under the APK's <span class="code">lib/</span> directory:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> mkdir -p build/apk/lib/armeabi-v7a build/apk/lib/x86
+
+<span class="gp">$</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ARM_TOOLCHAIN</span><span class="si">}</span><span class="s2">&quot;</span> --sysroot<span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">NDK</span><span class="si">}</span><span class="s2">/platforms/android-16/arch-arm&quot;</span> <span class="se">\</span>
+      -march<span class="o">=</span>armv7-a -mfpu<span class="o">=</span>vfpv3-d16 -mfloat-abi<span class="o">=</span>softfp -Wl,--fix-cortex-a8 <span class="se">\</span>
+      -fPIC -shared -o build/apk/lib/armeabi-v7a/libhello.so jni/hello.c
+
+<span class="gp">$</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">X86_TOOLCHAIN</span><span class="si">}</span><span class="s2">&quot;</span> --sysroot<span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">NDK</span><span class="si">}</span><span class="s2">/platforms/android-16/arch-x86&quot;</span> <span class="se">\</span>
+      -fPIC -shared -o build/apk/lib/x86/libhello.so jni/hello.c
+</pre></div>
+
+
+<p>(See the <a href="https://developer.android.com/ndk/guides/abis.html">ABI Management</a> doc for which ABIs can be targeted with the NDK, and under which <span class="code">lib/</span> directory to put the <span class="code">.so</span> file. The ARM compiler flags were inspired by <span class="code">${NDK}/build/core/toolchains/arm-linux-androideabi-4.9/setup.mk</span>.)</p>
+
+<p>To build the APK, we repeat the build steps from above (<span class="code">aapt</span> all the way to <span class="code">apksigner</span>). The contents of the APK can be inspected with the <span class="code">jar</span> tool:</p>
+
+<div class="highlight"><pre><span></span><span class="gp">$</span> jar tf build/Hello.apk
+<span class="go">AndroidManifest.xml
+classes.dex
+lib/armeabi-v7a/libhello.so
+lib/x86/libhello.so
+res/layout/activity_main.xml
+resources.arsc
+META-INF/ANDROIDK.SF
+META-INF/ANDROIDK.RSA
+META-INF/MANIFEST.MF</span>
+</pre></div>
+
+
+<p>The file should contain the manifest, the Java classes converted to DEX format, our two native <span class="code">.so</span> files, Application resources in raw (<span class="code">activity_main.xml</span>) and binary (<span class="code">resources.arsc</span>) form. The <span class="code">META-INF</span> directory contains the JAR file manifest and cryptographic signatures.</p>
+
+<p>When run, the application looks like this:</p>
+
+<div style="text-align: center">
+<p><img src="gfx/hello_screenshot.png" alt="Screenshot of hello.apk running on Android"></p>
+</div>
+
+<p>For a larger example, see the <a href="othello.html">Othello project</a>.</p>
+
+                        </div>
+                </div>
+                <div id="footer">
+                        Hans Wennborg |
+                        <a href="https://www.hanshq.net/">www.hanshq.net</a> |
+                        hans (at) hanshq.net |
+                        <a href="https://twitter.com/hansw2000">@hansw2000</a> |
+                        <a href="feed.rss">RSS</a>
+                </div>
+        </div>
+</div>
+</body>
+</html>

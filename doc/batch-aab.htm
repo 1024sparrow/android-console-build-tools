@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html><html dir="ltr" lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta charset="utf-8">
+<meta name="description" content="How to build an Android App Bundle (AAB) from the command line, without IDE">
+<meta property="fb:app_id" content="276851110065002">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to build an Android App Bundle (AAB) from the command line?">
+<meta property="og:description" content="How to build an Android App Bundle (AAB) from the command line, without IDE">
+<meta property="og:image" content="https://www.celersms.com/images/batch-aab.png">
+<meta property="og:url" content="https://www.celersms.com/batch-aab.htm">
+<meta name="citation_title" content="¿Cómo Crear un Paquete AAB para Android desde Línea de Comandos?">
+<meta name="citation_author" content="Kameñar, Vladimir">
+<meta name="citation_publication_date" content="2021/05/30">
+<meta name="citation_journal_title" content="CelerSMS">
+<meta name="citation_issn" content="2745-2336">
+<meta name="citation_volume" content="1">
+<meta name="citation_issue" content="1">
+<meta name="citation_firstpage" content="10">
+<meta name="citation_lastpage" content="12">
+<meta name="citation_pdf_url" content="https://www.celersms.com/revista/CelerSMS_001_2021.pdf">
+<title>CelerSMS: How to build an AAB bundle from the command line?</title>
+<link rel="canonical" href="https://www.celersms.com/batch-aab.htm">
+<link rel="alternate" href="https://www.celersms.com/batch-aab.htm" hreflang="en">
+<link rel="alternate" href="https://www.celersms.com/batch-aab-es.htm" hreflang="es">
+<link rel="alternate" href="https://www.celersms.com/batch-aab.htm" hreflang="x-default">
+<LINK REL="icon" HREF="favicon.ico" TYPE="image/x-icon"><LINK REL="shortcut icon" HREF="favicon.ico" TYPE="image/x-icon">
+<link href="static/template.css" rel="stylesheet">
+<script src="static/jquery.js"></script>
+<script src="static/bootstrap.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-155172026-1"></script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','UA-155172026-1');
+</script>
+</head>
+<body class="site com_content view-article no-layout">
+<div class="body" id="top"><div class="container"><header class="header" role="banner">
+<div class="header-inner clearfix"><div class="header-search pull-right"><img width="100%" src="static/banner.jpg" alt="CelerSMS"><div class="clr"></div>
+</div></div></header>
+<nav class="navigation" role="navigation">
+	<div class="navbar pull-left">
+		<a class="btn btn-navbar collapsed" data-toggle="collapse" data-target=".nav-collapse"><span class="element-invisible">Navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></a>
+	</div>
+	<div class="nav-collapse">
+		<div aria-label="breadcrumbs" role="navigation">
+			<ul itemscope="" itemtype="https://schema.org/BreadcrumbList" class="breadcrumb">
+				<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+					<a itemprop="item" href="index.htm" class="pathway"><span itemprop="name">Home</span></a>
+					<span class="divider"><img src="static/arrow.png" alt="&gt;"></span>
+					<meta itemprop="position" content="1">
+				</li>
+				<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="active">
+					<a itemprop="item" href="batch-aab.htm" class="pathway"><span itemprop="name">How to build an AAB bundle from the command line?</span></a>
+					<meta itemprop="position" content="2">
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<div class="row-fluid">
+	<main id="content" role="main" class="span9">
+		<div class="item-page" itemscope itemtype="https://schema.org/Article"><meta itemprop="inLanguage" content="en"><meta itemprop="publisher" content="CelerSMS">
+<h1 itemprop="headline">How to build an AAB bundle from the command line?</h1>
+<p align="right">Publication date: <b itemprop="datePublished">2021-03-04</b><br>Last update: <b itemprop="dateModified">2021-03-04</b><br>Author: <b itemprop="author"><a href="org/vkamenar.htm">Vladimir Kame&#241;ar</a></b>
+<p>&nbsp;
+<div itemprop="articleBody">
+<p>In a <a href="batch-apk.htm">previous article</a> we've learned how to build an APK executable for Android from the command line, without using an IDE.
+Let's advance further and build an Android App Bundle (AAB). Only the JDK, the Android SDK and the Bundletool will be used. The steps described below were tested in Windows,
+but the same commands can be adapted to any other environment.
+<p><img style="display:block;margin-left:auto;margin-right:auto" src="images/batch-aab.png" alt="Build an AAB from the command line" itemprop="image">
+<p>&nbsp;
+<h4>What is Android App Bundle (AAB)?</h4>
+<p>Currently <a href="https://developer.android.com/guide/app-bundle" target="_blank">AAB</a> is the preferred format to publish applications to Google Play. This publishing
+format contains all the application compiled code and resources. The APK generation and signing is deferred to Google Play. In this way the APK can be optimized
+by including only the code and resources that are needed for a specific device. Therefore, the download size can be reduced significantly.
+<p>For example, let's suppose that our app supports both smartphones and Android TV. For compatibility with Android TV we've created a hi-res banner image.
+If we publish the app in APK format our banner image will be downloaded to the smartphone devices, even though it will never be used there.
+The AAB format makes it possible to avoid including unnecessary data to speed up the download, save bandwidth and storage space.
+<p>At the time of writing the AAB format is used by Google Play only, it is not supported by other stores.
+<p>&nbsp;
+<h4>Why not using an IDE?</h4>
+<p>Android Studio can build an AAB automatically with a single click. Doing it manually may be useful for learning purposes. For example, if you are
+building your own tool to generate Android applications, this article can be used as a reference. There are special cases when it can be necessary
+to avoid using autogenerated code. In such cases you may need to build the package manually.
+<p>&nbsp;
+<h4>The tools of trade</h4>
+<p>We'll only need the JDK, the Android SDK and the Bundletool. The JDK is necessary to compile the Java code and pack the binaries. It can be
+used to generate the certificate for signing as well. The Android SDK contains the necessary tools to convert the bytecode to Dex format
+(Dalvik Android virtual machine), align and sign the bundle. The Bundletool is used to generate the AAB. It is also used to test the AAB locally, by
+generating the device specific APKs.
+<p>If you don't already have a JDK 1.6 or later installed you can download it from <a href="https://www.oracle.com/java/technologies/javase-downloads.html" target="_blank">
+the Oracle website</a>. Make sure to install the Java Development Kit (JDK), not just the runtime. It's recommended to configure the
+environment variable JAVA_HOME to point to the Java installation location (without including the <i>bin</i> subdirectory). This is not mandatory, but it can help
+the Java tools locate the correct JDK version, especially if you have multiple JDK versions installed.
+<p>The Android SDK installation is trickier. Google doesn't provide the SDK as a standalone installation package any longer. There are 2 alternatives:
+<ul>
+<li>Install the Android Studio from <a href="https://developer.android.com/studio" target="_blank">the official website</a>. From the IDE homepage you can
+install the SDK easily.</li>
+<li>Another option is to download and install the Command Line Tools, which are available at the bottom of the same <a href="https://developer.android.com/studio" target="_blank">official website</a>.
+The Command Line Tools are not the Android SDK. After installing the Command Line Tools you can launch the
+<a href="https://developer.android.com/studio/command-line/sdkmanager" target="_blank">sdkmanager</a> to download and configure the Android SDK.</li>
+</ul>
+<p>The Android SDK Build Tools should be at least version 29.0.2. Previous versions may not include the AAPT2 tool or there may be compatibility issues.
+You can also download the latest AAPT2 version from Maven as <a href="https://developer.android.com/studio/command-line/aapt2" target="_blank">explained here</a>.
+<p>The latest Bundletool can be <a href="https://github.com/google/bundletool/releases" target="_blank">downloaded here</a>. It is provided as a single JAR file.
+<p>&nbsp;
+<h4>Sample project</h4>
+<p><a href="https://github.com/celersms/BatchAAB" target="_blank"><img src="static/github.png" alt="GitHub" align="left" hspace=10 border=0></a>A complete sample project
+containing the Java source code and the Windows batch files to build and run the Android application is available in <a href="https://github.com/celersms/BatchAAB" target="_blank">our
+GitHub repository</a>.
+<p>We recommend creating your own certificate to sign the bundle. The JDK <i>keytool</i> can be used to replace the sample certificate with your own:
+<pre style="background:#000;color:#fff">
+del src\demo.keystore /q
+
+REM The following command is a single line
+"%JAVA_HOME%"\bin\keytool -genkey -keystore src\demo.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias demo
+</pre>
+<p>The path <i>src\demo.keystore</i> can be changed if you want to store the certificate into a different location. If you didn't configure the
+JAVA_HOME environment variable, the full path must be specified when calling the <i>keytool</i>. The certificate validity and the alias name can be changed,
+if necessary. The <i>keytool</i> will prompt you to fill in some information about the organization, location and assign a password. Our password for
+demo.keystore is <i>password</i> (not really strong).
+<p>&nbsp;
+<h4>build.bat</h4>
+<p>Before running <i>build.bat</i> it's necessary to setup the following configuration parameters. A plain text editor like Notepad can be used to edit the <i>build.bat</i> file:
+<ul>
+<li><b>BUILD_TOOLS</b> is the location of the Android SDK Build Tools. Use the example value as a reference.</li>
+<li><b>ANDROID_JAR</b> is the path to the <i>android.jar</i> for the required API level. It is recommended to use the latest API version.
+It doesn't prevent the APK from running on older Android versions unless the app uses new version specific features.</li>
+<li><b>BUNDLETOOL</b> is the location of the Bundletool jarfile. Try to use the latest version, if possible.</li>
+</ul>
+<p>Let's review what the batch file does step by step:
+<ol>
+<li>Compile the resources. This command parses the Android resources (images, xml and so on) and packs them into a ZIP file. Notice that in order to build an AAB we are using the AAPT2 tool instead of AAPT.
+<pre style="background:#000;color:#fff">
+"%BUILD_TOOLS%\aapt2" compile --dir res\ -o obj\res.zip
+</pre></li>
+<li>Link the resources. This is a single line:
+<pre style="background:#000;color:#fff">
+"%BUILD_TOOLS%\aapt2" link --proto-format -o obj\linked.zip -I "%ANDROID_JAR%" --manifest src\AndroidManifest.xml --java src obj\res.zip --auto-add-overlay
+</pre></li>
+<li>Compile the Java sources to bytecode.
+<pre style="background:#000;color:#fff">
+"%JAVA_HOME%\bin\javac" -d obj -classpath src -bootclasspath "%ANDROID_JAR%" src\com\celer\hello\*.java
+</pre></li>
+<li>Convert the bytecode to Dex format (Dalvik Android virtual machine).
+<pre style="background:#000;color:#fff">
+"%BUILD_TOOLS%\dx" --dex --output=bin\classes.dex obj
+</pre></li>
+<li>Combine the resources and the bytecode into a single bundle:
+<pre style="background:#000;color:#fff">
+cd obj
+"%JAVA_HOME%\bin\jar" xf linked.zip resources.pb AndroidManifest.xml res
+mkdir manifest dex 2>nul
+move AndroidManifest.xml manifest
+copy /Y /B ..\bin\classes*.dex dex\ 2>nul
+"%JAVA_HOME%\bin\jar" cMf base.zip manifest dex res resources.pb
+</pre></li>
+<li>Build the AAB.
+<pre style="background:#000;color:#fff">
+"%JAVA_HOME%\bin\java" -jar "%BUNDLETOOL%" build-bundle --modules=base.zip --output=..\bin\hello.aab
+</pre></li>
+<li>Sign the AAB.
+<pre style="background:#000;color:#fff">
+"%JAVA_HOME%\bin\jarsigner" -keystore ..\src\demo.keystore -storepass password ..\bin\hello.aab demo
+</pre></li>
+</ol>
+<p>If there are no errors the output will be an AAB ready to be published to Google Play.
+</div>
+	</div>
+		<div class="clearfix"></div>
+	</main>
+	<div id="aside" class="span3">
+<div class="well"><div class="mod-languages">
+<ul class="lang-inline" dir="ltr">
+	<li><a href="batch-aab-es.htm"><img src="static/es_es.gif" alt="Español" title="Español"></a></li>
+	<li><a href="batch-aab.htm"><img src="static/en_gb.gif" alt="English" title="English"></a></li>
+</ul>
+</div>
+</div><div class="well">
+<ul class="nav menu mod-list">
+<li><a href="about.htm">About us</a></li>
+<li class="default"><a href="index.htm">Articles</a></li>
+<li><a href="apps.htm">Products</a></li>
+<li><a href="contact.htm">Contact Us</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="footer" role="contentinfo">
+<div class="container"><hr><p class="pull-right"><a href="#top" id="back-top">Back to Top</a><p><small style="color:#505b5c">&copy; CelerSMS, 2019-2021</small></div>
+</footer>
+</body></html>
