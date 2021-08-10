@@ -6,27 +6,49 @@ function generateNewProjectSources {
     local appname=$1
     local apppath=$2
     local apppathDotes=$(echo $apppath | sed 's/\//./g')
+    local sdkVersion=$3
 
     #echo "apppathDotes: $apppathDotes"
     #echo "apppath: $apppath"
     #echo "appname: $appname"
 
-    echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+    #echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+#<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"
+#          package=\"${apppathDotes}\"
+#          versionCode=\"1\"
+#          versionName=\"0.1\">
+#    <uses-sdk android:minSdkVersion=\"16\"/>
+#    <application android:label=\"Hello\">
+#        <activity android:name=\".MainActivity\">
+#            <intent-filter>
+#                <action android:name=\"android.intent.action.MAIN\"/>
+#                <category android:name=\"android.intent.category.LAUNCHER\"/>
+#            </intent-filter>
+#        </activity>
+#    </application>
+#</manifest>
+#" > AndroidManifest.xml
+
+echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"
           package=\"${apppathDotes}\"
-          versionCode=\"1\"
-          versionName=\"0.1\">
-    <uses-sdk android:minSdkVersion=\"16\"/>
-    <application android:label=\"Hello\">
-        <activity android:name=\".MainActivity\">
+          android:versionCode=\"1\"
+          android:versionName=\"0.1\"
+          android:installLocation=\"auto\"
+>
+    <supports-screens android:smallScreens=\"true\" android:normalScreens=\"true\" android:largeScreens=\"true\" android:xlargeScreens=\"true\"/>
+    <application android:smallScreens=\"true\" android:label=\"Hello\">
+        <activity android:name=\".MainActivity\" android:exported=\"true\">
             <intent-filter>
                 <action android:name=\"android.intent.action.MAIN\"/>
                 <category android:name=\"android.intent.category.LAUNCHER\"/>
             </intent-filter>
         </activity>
     </application>
+    <uses-sdk android:minSdkVersion=\"1\" android:targetSdkVersion=\"\${sdkVersion}\"/>
 </manifest>
 " > AndroidManifest.xml
+#<uses-sdk android:minSdkVersion="1" android:targetSdkVersion="29"/>
 
     mkdir -p res/layout
     echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -144,7 +166,20 @@ apppath=${apppath}
 apppathDotes=$(echo $apppath | sed 's/\//./g')
 mainActivityName=MainActivity
 
-source $MYANDROID/environments/2
+#source $MYANDROID/environments/2
+for i in \$(ls \$MYANDROID/environments)
+do
+    source \$MYANDROID/environments/\$i
+    echo \"\$i.) \$BUILD_TARGET_DESCRIPTION\"
+done
+echo -n "Выберите цель сборки: "
+read envIndex
+if [ ! -f \$MYANDROID/environments/\$envIndex ]
+then
+    echo "Недопустимый индекс. Выберите число из приведённого выше списка"
+    exit 1
+fi
+source \$MYANDROID/environments/\$envIndex
 
 RED='\033[0;31m'
 YEL='\033[1;33m'
@@ -161,8 +196,11 @@ rm -rf build
 echo -e \"\${YEL}Создаём директории, куда будет производиться сборка\${NC}\"
 mkdir -p build/gen build/obj build/apk || error_quite
 
+echo -e \"\${YEL}Генерируем специфичный для версии анроида файл AndroidManifest.xml\${NC}\"
+sed \"s/\\\${sdkVersion}/\${SDK_VERSION}/\" AndroidManifest.xml > build/gen/AndroidManifest.xml
+
 echo -e \"\${YEL}Генерируем java-файлы (R.java), отображающие содержимое ресурсов (которые описаны в XML)\${NC}\"
-\"\${BUILD_TOOLS}/aapt\" package -f -m -J build/gen/ -S res -M AndroidManifest.xml -I \"\${PLATFORM}/android.jar\" || error_quite
+\"\${BUILD_TOOLS}/aapt\" package -f -m -J build/gen/ -S res -M build/gen/AndroidManifest.xml -I \"\${PLATFORM}/android.jar\" || error_quite
 
 echo -e \"\${YEL}Собираем байт-код для нашего Java-приложения. Делаем байт-код для версии Java 7.\${NC}\"
 javac -source 1.7 -target 1.7 -bootclasspath \"\${JAVA_HOME}/jre/lib/rt.jar\" -classpath \"\${PLATFORM}/android.jar\" -d build/obj build/gen/\${apppath}/R.java java/\${apppath}/MainActivity.java || error_quite
@@ -172,8 +210,8 @@ echo -e \"\${YEL}Преобразуем стандартный байт-код �
 \"\${BUILD_TOOLS}/dx\" --dex --output=build/apk/classes.dex build/obj/ || error_quite
 
 echo -e \"\${YEL}Запаковываем .dex-файлы, манифест и ресурсы в APK\${NC}\"
-#\"\${BUILD_TOOLS}/aapt\" package -f -M AndroidManifest.xml -A assets -S res/ -I \"\${PLATFORM}/android.jar\" -F build/\${appname}.unsigned.apk build/apk/ || error_quite
-\"\${BUILD_TOOLS}/aapt\" package -f -M AndroidManifest.xml -S res/ -I \"\${PLATFORM}/android.jar\" -F build/\${appname}.unsigned.apk build/apk/ || error_quite
+#\"\${BUILD_TOOLS}/aapt\" package -f -M build/gen/AndroidManifest.xml -A assets -S res/ -I \"\${PLATFORM}/android.jar\" -F build/\${appname}.unsigned.apk build/apk/ || error_quite
+\"\${BUILD_TOOLS}/aapt\" package -f -M build/gen/AndroidManifest.xml -S res/ -I \"\${PLATFORM}/android.jar\" -F build/\${appname}.unsigned.apk build/apk/ || error_quite
 echo \"У нас есть apk-файл, но прежде чем его устанавливать на смартфон, его необходимо подписать...\"
 
 echo -e \"\${YEL}Делаем так, чтобы после распаковки нашего apk файлы были выровнены по размеру блока 4 байта\${NC}\"
